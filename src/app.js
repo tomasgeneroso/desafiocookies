@@ -9,13 +9,6 @@ const cookieParser=require('cookie-parser')
 const MongoStore = require('connect-mongo')
 //----------------------------------------
 
-// //IMPORTO Y SETEO HANDLEBARS 
-// const handlebars=require('express-handlebars')
-// app.engine('handlebars',handlebars.engine())
-// app.set('views',__dirname,'/views')
-// app.set('view engine','handlebars')
-// //--------------------------------------------
-
 //INICIALIZO COOKIES
 app.use(cookieParser())
 app.use(session({
@@ -33,10 +26,10 @@ app.use(express.static(__dirname+'/public'))
 
  app.get('/',(req,res)=>{
      try {
-         console.log(user)
+        console.log(user)
         res.sendFile(path.join(__dirname+'/public/main.html'))  
      } catch (error) {
-         
+         console.log(error)
      }
     
  })
