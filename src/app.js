@@ -73,6 +73,7 @@ passport.use('register',new LocalStrategy({usernameField:'email',passwordField:'
                 const newuser=new User()
                 newuser.email=email
                 newuser.password=password
+                username=newuser.email
                 await newuser.save().then('user added').catch(error=>console.log('ERROR to add user '+error))
                 done(null,newuser.email)
             }
