@@ -38,6 +38,8 @@ app.use(express.json())
 const passport=require('passport')
 const LocalStrategy=require('passport-local').Strategy
 
+app.use(passport.initialize())
+app.use(passport.session())
 passport.use('login',new LocalStrategy({usernameField:'email',passwordField:'password',passReqToCallback:true}, 
     async (email,password,done)=>{
         try{
@@ -80,12 +82,14 @@ passport.use('register',new LocalStrategy({usernameField:'email',passwordField:'
     }
 }))
 
-passport.serializeUser((newuser,done)=>{done(null,newuser.email)})
+passport.serializeUser((user,done)=>{
+    done(null,user)
+})
 
-passport.deserializeUser(async (newuser,done)=>{let user= await collection.find({"email":newuser.email});done(null,user)})
+passport.deserializeUser( (user,done)=>{
+    let usuario=  User.find({"email":user.email});
+    done(null,usuario)})
 
-app.use(passport.initialize())
-app.use(passport.session())
 //--------------------------
 
 let username
@@ -121,12 +125,6 @@ const isNotLogin=(req,res,next)=>{
 }
 app.get('/welcome',isLogin,(req,res)=>{
     try {
-        // req.session.destroy(error=>{
-        //     if(!error){
-        //         username=''
-        //         res.redirect('/',{username})
-        //     } else res.send({status:'ERROR',error:error})
-        //     })
         console.log('WELCOME')
         res.render('welcome',{username})
     } catch (error) {
@@ -148,9 +146,23 @@ app.get('/register',isNotLogin,(req,res)=>{
      }
 })
 
-app.get('/',isLogin,(req,res)=>{
+app.get('/',(req,res)=>{
      try {  
         res.render('main')
+     } catch (error) {
+         console.log(error)
+     }
+})
+app.get('/logout',(req,res)=>{
+     try {  
+        req.session.destroy(error=>{
+            if(!error){
+                username=''
+                console.log('Eliminado!')
+                res.redirect('/')
+            } else res.send({status:'ERROR',error:error})
+        })
+        
      } catch (error) {
          console.log(error)
      }
@@ -164,6 +176,6 @@ app.post('/register',passport.authenticate('register',{failureMessage:true,succe
         console.log(error)
     }
 })
-app.post('/',passport.authenticate('login',{failureRedirect:'/register',successRedirect:'/welcome'}))
+app.post('/',isLogin,passport.authenticate('login',{failureRedirect:'/register',successRedirect:'/welcome'}))
 
 app.listen(config.PORT,()=>{console.log(`Listen port ${config.PORT}`)})
