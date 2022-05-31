@@ -1,0 +1,18 @@
+<%- include('head')%>
+    <div>
+        <h1 id="welcome">REGISTER</h1>
+        <form action="/register" method="post" >
+            <input id="username" name="email" type="email" placeholder="Enter your email" >
+            
+            <input id="password" name="password" type="text" placeholder="Enter your password" >
+            <input id="password2" name="password2" type="text" placeholder="Re-enter your password" >
+            
+            <input type="submit" onclick="location.href='/register'" id="register-btn" value="REGISTER">
+        </form>     
+        <input type="submit" onclick="location.href='/'" id="gotologin" value="GO TO LOGIN">    
+        <button onclick="document.location.reload(true)"> REFRESH </button>
+    </div>    
+    <script src="../app.js"></script>
+<%- include('footer')%>
+    
+    
