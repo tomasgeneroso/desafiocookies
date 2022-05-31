@@ -2,6 +2,7 @@ const express=require('express')
 const app=express()
 const config=require('./config.js')
 const mongoose=require('mongoose')
+require('./database.js')
 //IMPORTO express session y connectmongo
 const session=require('express-session')
 const cookieParser=require('cookie-parser')
@@ -56,24 +57,22 @@ passport.use('login',new LocalStrategy({usernameField:'email',passwordField:'pas
 ))
 passport.use('register',new LocalStrategy({usernameField:'email',passwordField:'password',passReqToCallback:true},async (req,email,password,done)=>{//que nos envie un 4to param que sea el req
     try {
-        //ACA QUEDA COLGADO ESPERANDO.
-        let user=await User.find({email:email}).then(user=>{console.log(user)}).catch(error=>console.log('Error buscando user '+error))
         
-        console.log('ENTRO AL REGISTER PASSPORT')
+        let user=await User.find({email:email}).then(user=>{console.log(user)}).catch(error=>console.log('Error buscando user '+error))
         if(user){ //si existe el usuario tirar error de registro
             return done(null,user.email)
         }else{
             password2=req.body.password2
             if(password!=password2){
                 console.log('The passwords are not the same')
-                res.send('register')
+                done(null,user)
             }   
             else {
                 const newuser=new User()
                 newuser.email=email
                 newuser.password=password
-                await user.save().then('user added').catch(error=>console.log('ERROR to add user '+error))
-                res.render('welcome',{email})
+                await newuser.save().then('user added').catch(error=>console.log('ERROR to add user '+error))
+                done(null,newuser.email)
             }
         }
     } catch (error) {
@@ -81,9 +80,9 @@ passport.use('register',new LocalStrategy({usernameField:'email',passwordField:'
     }
 }))
 
-passport.serializeUser((user,done)=>{done(null,user.username)})
+passport.serializeUser((newuser,done)=>{done(null,newuser.email)})
 
-passport.deserializeUser(async (username,done)=>{let user= await collection.find({"username":username});done(null,user)})
+passport.deserializeUser(async (newuser,done)=>{let user= await collection.find({"email":newuser.email});done(null,user)})
 
 app.use(passport.initialize())
 app.use(passport.session())
@@ -159,8 +158,8 @@ app.get('/',isLogin,(req,res)=>{
  
 app.post('/register',passport.authenticate('register',{failureMessage:true,successRedirect:'/welcome'}),(req,res)=>{
     try {  
-    
-       res.redirect('/register')
+        console.log('registrado')
+       //res.redirect('/register')
     } catch (error) {
         console.log(error)
     }
